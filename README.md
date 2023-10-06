@@ -20,8 +20,11 @@ A step-by-step guide on how to install OpenSSH server on an Ubuntu server, creat
    ```
 
 5. The installation process will start, and you will be prompted to confirm by typing 'Y' if necessary.
-
-6. Once the installation is complete, the SSH server should start automatically. You can check its status with:
+6. Once the installation is complete, the SSH server should start automatically. However, to ensure it's enabled to start on boot, use the following command:
+   ```
+   sudo systemctl enable ssh
+   ```
+7. Once the installation is complete, the SSH server should start automatically. You can check its status with:
 
    ```
    sudo systemctl status ssh
