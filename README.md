@@ -1,6 +1,5 @@
-# openssh-server
 
-A step-by-step guide on how to install OpenSSH server on an Ubuntu server, create an SSH key pair, and connect to the server from your Mac using SSH. Please note that you'll need administrative access to your Ubuntu server for these steps.
+A step-by-step guide on how to install OpenSSH server on an Ubuntu server, create an SSH key pair, add your custom SSH key to the SSH agent on your Mac, and connect to the server from your Mac using SSH with passwordless authentication. Please note that you'll need administrative access to your Ubuntu server for these steps.
 
 **Step 1: Install OpenSSH Server on Ubuntu Server**
 
@@ -32,7 +31,7 @@ A step-by-step guide on how to install OpenSSH server on an Ubuntu server, creat
 
 **Step 2: Create an SSH Key Pair on Your Mac**
 
-1. Open a terminal on your Mac.
+1. On your Mac, open a terminal.
 
 2. Use the following command to generate an SSH key pair. Replace `your_email@example.com` with your email address:
 
@@ -46,7 +45,33 @@ A step-by-step guide on how to install OpenSSH server on an Ubuntu server, creat
 
 4. You can optionally set a passphrase for added security. If you do, you will need to enter the passphrase every time you use the key.
 
-**Step 3: Copy Your Public Key to the Ubuntu Server**
+**Step 3: Add Your SSH Key to the SSH Agent on Your Mac**
+
+1. On your Mac, open a terminal.
+
+2. Start the SSH agent by running the following command:
+
+   ```
+   eval "$(ssh-agent -s)"
+   ```
+
+3. Add your private key to the SSH agent:
+
+   ```
+   ssh-add ~/.ssh/id_rsa
+   ```
+
+   If you set a passphrase for your key, you will be prompted to enter it.
+
+4. Verify that your SSH key has been added to the agent:
+
+   ```
+   ssh-add -l
+   ```
+
+   You should see your key listed.
+
+**Step 4: Copy Your Public Key to the Ubuntu Server**
 
 1. To copy your public key to the Ubuntu server, you can use the `ssh-copy-id` command. Replace `username` and `server_ip` with your server's username and IP address:
 
@@ -58,7 +83,7 @@ A step-by-step guide on how to install OpenSSH server on an Ubuntu server, creat
 
 2. Once the key is copied, you should be able to log in without a password from your Mac.
 
-**Step 4: Connect to the Ubuntu Server from Your Mac**
+**Step 5: Connect to the Ubuntu Server from Your Mac**
 
 1. To connect to your Ubuntu server from your Mac, use the `ssh` command. Replace `username` and `server_ip` with your server's username and IP address:
 
@@ -70,38 +95,48 @@ A step-by-step guide on how to install OpenSSH server on an Ubuntu server, creat
 
 2. You should now be logged in to your Ubuntu server via SSH.
 
+**Step 6: Disable Password Authentication on the Ubuntu Server (Optional)**
 
-**Step 5: Copy Your Custom SSH Public Key to the Ubuntu Server**
+1. On your Ubuntu server, open a terminal.
 
-1. On your host machine, open a terminal.
+2. Edit the SSH server configuration file (`sshd_config`) using a text editor:
 
-2. Use the `ssh-copy-id` command to copy your custom public key to your Ubuntu server. Replace `username`, `server_ip`, and `/path/to/your_custom_public_key.pub` with your server's username, IP address, and the path to your custom public key file:
-
-   ```
-   ssh-copy-id -i /path/to/your_custom_public_key.pub username@server_ip
-   ```
-
-   This command will copy your custom public key to the server's `~/.ssh/authorized_keys` file.
-
-3. You will be prompted to enter your server user's password.
-
-**Step 6: Connect to the Ubuntu Server Using Your Custom SSH Key**
-
-1. On your host machine, open a terminal.
-
-2. To connect to your Ubuntu server using your custom SSH key, use the `ssh` command. Replace `username` and `server_ip` with your server's username and IP address:
-
-   ```
-   ssh -i /path/to/your_custom_private_key username@server_ip
+   ```sh
+   sudo nano /etc/ssh/sshd_config
    ```
 
-   Replace `/path/to/your_custom_private_key` with the actual path to your custom private key file.
+3. Locate the following line:
 
-3. If you have set a passphrase for your custom private key, you will be prompted to enter it.
+   ```
+   #PasswordAuthentication yes
+   ```
 
-4. You should now be logged in to your Ubuntu server using your custom SSH key pair.
+   Uncomment this line (remove the `#` at the beginning) and set it to `no`:
 
-Using `ssh-copy-id` with the `-i` option allows you to copy your custom SSH public key to the server's authorized keys file and then connect to the server using your custom private key.
+   ```
+   PasswordAuthentication no
+   ```
 
+   This change will disable password-based authentication for SSH on your server.
 
-That's it! You have successfully installed OpenSSH on your Ubuntu server, created an SSH key pair on your host machine, copied the public key to the server, and connected to the server using SSH without a password.
+4. Save the changes and exit the text editor.
+
+5. Restart the SSH service to apply the changes:
+
+   ```sh
+   sudo systemctl restart ssh
+   ```
+
+**Step 7: Test SSH Key-Based Authentication**
+
+1. On your Mac, open a terminal.
+
+2. To connect to your Ubuntu server using SSH, use the `ssh` command as before:
+
+   ```sh
+   ssh username@server_ip
+   ```
+
+   You should now be able to log in without being prompted for a password or passphrase. SSH key-based authentication is enabled, and password-based authentication is disabled for added security.
+
+By following these steps, you've installed OpenSSH on your Ubuntu server, created an SSH key pair on your Mac, added your custom SSH key to the SSH agent, copied the public key to the server, and connected to the server using SSH without a password. Additionally, you have the option to disable password-based authentication on the server for enhanced security.
